@@ -1,3 +1,5 @@
 /.daml
 /ui/node_modules 
 /daml.js
+/deploy
+/ui/build
