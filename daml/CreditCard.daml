@@ -1,0 +1,70 @@
+module CreditCard where 
+
+data Rewards = Points | CashBack | Perks
+  deriving (Eq, Show)
+
+template CreditCard 
+  with 
+    owner: Party 
+    underwriter: Party 
+    ccType: Rewards
+    limit: Decimal 
+    balance: Decimal 
+    currency: Text  
+    name: Text 
+    number: Int 
+    expiry: Date
+  where 
+    signatory underwriter, owner
+
+template CreditCardApplication 
+  with 
+    owner: Party 
+    underwriter: Party
+    ccType: Rewards 
+    currency: Text 
+    name: Text 
+  where 
+    signatory owner 
+
+    controller underwriter can 
+      IssueCreditCard: ContractId CreditCard 
+        with 
+          number: Int 
+          expiry: Date 
+          limit: Decimal 
+        do 
+          create CreditCard 
+            with 
+              balance = 0.0
+              ..
+
+      Decline: ContractId DeclinedApplication 
+        with 
+          reason: Text 
+          suggestedCcType: Rewards 
+        do 
+          create DeclinedApplication 
+            with ..
+
+template DeclinedApplication 
+  with 
+    owner: Party 
+    underwriter: Party 
+    currency: Text 
+    name: Text 
+    reason: Text
+    suggestedCcType: Rewards 
+  where 
+    signatory underwriter, owner 
+
+    controller owner can 
+      RequestNewCard: ContractId CreditCardApplication
+        do 
+          create CreditCardApplication 
+            with 
+              ccType = suggestedCcType
+              ..
+
+
+  
